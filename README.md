@@ -2,6 +2,9 @@
 ```
 dos模式：Ctrl+alt+f2 
 
+复制：shift+ctrl+c
+粘贴：shift+ctrl+v
+
 新建cpp：touch test.cpp
 编辑：vim test.cpp
 
