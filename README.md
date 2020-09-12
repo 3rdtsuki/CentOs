@@ -15,5 +15,6 @@ ESC 进入命令模式
   shift+: wq 回车保存并退出
   
 编译：g++ test.cpp -o test
+    有时缺少关键字，需要用这条：g++ -std=gnu++0x test.cpp -o test
 运行：./test
 ```
