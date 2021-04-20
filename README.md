@@ -1,7 +1,5 @@
-```
-查找某个字符串 grep xxx *
+查找某个字符串 grep 字符串 文件名，例如：grep nop *，在当前目录下所有文件里找nop
 dos模式：Ctrl+alt+f2 
-
 复制：shift+ctrl+c
 粘贴：shift+ctrl+v
 
@@ -18,5 +16,3 @@ ESC 进入命令模式
     有时缺少关键字，需要用这条：g++ -std=gnu++0x test.cpp -o test
 运行：./test
 
-
-```
