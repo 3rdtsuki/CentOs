@@ -33,10 +33,11 @@ int main(int argc, char **argv){//argc是参数个数，argv是所有的参数[.
 				b_opt_arg = optarg;//optarg：指向当前选项参数(如果有)的指针，这里指向了3
 				cout<<b_opt_arg<<endl;
 				break;
-            case 'm':
+			case 'm':
 				//获取三个参数
 				char *x=optarg,*y=argv[optind],*z=argv[optind+1];
 				cout<<x<<' '<<y<<' '<<z<<endl;
+				break;
 		}
 	}
 	// for(int i=0;i<argc;++i){
