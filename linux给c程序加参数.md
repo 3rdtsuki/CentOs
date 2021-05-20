@@ -5,6 +5,8 @@ g++ -g test.cpp -o test
 ./test -n 3
 ```
 
+n是选项
+
 argc是参数个数（但是不需要去填），argv是所有的参数，这里就是[./test -n 3]三个参数
 
 
@@ -14,6 +16,8 @@ getopt(argc, argv, optstring)：位于头文件<unistd.h>
 optstring指定选项合法的选项（如n），一个字符代表一个选项，在字符后面加一个':'表示该选项带一个参数，字符后带两个':'表示该选项带可选参数(参数可有可无)，若有参数，optarg指向该参数，否则optarg为0。如果没有该选项，返回-1
 
 optarg是一个系统指针，指向当前选项参数（如果有）的指针
+
+
 
 ```cpp
 #include <stdio.h>
@@ -30,7 +34,9 @@ int main(int argc, char **argv){//argc是参数个数，argv是所有的参数[.
 				cout<<b_opt_arg<<endl;
 				break;
             case 'm':
-				cout<<"999"<<endl;
+				//获取三个参数
+				char *x=optarg,*y=argv[optind],*z=argv[optind+1];
+				cout<<x<<' '<<y<<' '<<z<<endl;
 		}
 	}
 	// for(int i=0;i<argc;++i){
@@ -39,5 +45,14 @@ int main(int argc, char **argv){//argc是参数个数，argv是所有的参数[.
 	printf("hello world : %s\n", b_opt_arg);
 	return 0;
 }
+```
+
+如果一个选项想要多个参数
+
+```c
+.test -m 3 4 readme.txt
+    
+char *x=optarg,*y=argv[optind],*z=argv[optind+1];
+cout<<x<<' '<<y<<' '<<z<<endl;
 ```
 
