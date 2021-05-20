@@ -23,12 +23,14 @@ using namespace std;
 int main(int argc, char **argv){//argc是参数个数，argv是所有的参数[./test -n 3]三个参数
 	int oc;			 /*选项字符 */
 	char *b_opt_arg; /*选项参数字串 */
-	while ((oc = getopt(argc, argv, "n:")) != -1){//getopt返回int型的asc码
+	while ((oc = getopt(argc, argv, "n:m:")) != -1){//getopt返回int型的asc码
 		switch (oc){
 			case 'n':
 				b_opt_arg = optarg;//optarg：指向当前选项参数(如果有)的指针，这里指向了3
 				cout<<b_opt_arg<<endl;
 				break;
+            case 'm':
+				cout<<"999"<<endl;
 		}
 	}
 	// for(int i=0;i<argc;++i){
