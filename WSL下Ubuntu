@@ -1,4 +1,0 @@
-https://www.computerhope.com/issues/ch001879.htm#install
-WSL环境下安装，不用装虚拟机
-
-sudo apt-get install -y ...
