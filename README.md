@@ -4,6 +4,13 @@ VMWare12密钥：5A02H-AU243-TZJ49-GTC7K-3C61N
 
 设置root密码`sudo passwd root`
 
+修改时区
+
+```shell
+tzselect
+sudo ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+```
+
 在当前目录查找某个字符串 `grep str *`，在当前目录下递归查找字符串`grep -r str ./`
 
 新建文档 `touch filename`
@@ -33,7 +40,7 @@ WSL环境下安装，不用装虚拟机
 
 #### Ubuntu18没有上网图标
 
-```bash
+```shell
 sudo service network-manager stop
 sudo rm /var/lib/NetworkManager/NetworkManager.state
 sudo service network-manager start
