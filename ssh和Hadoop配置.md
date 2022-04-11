@@ -164,15 +164,15 @@ sbin/stop-all.sh 				# 关闭所有进程
 
 运行成功后，可以看到主节点上出现进程：namenode, datanode
 
-<img src="pic/namenode.png" style="zoom: 80%;" />
+<img src="./pic/namenode.png" style="zoom: 80%;" />
 
 从节点上：datanode
 
-<img src="pic/datanode.png" style="zoom:80%;" />
+<img src="./pic/datanode.png" style="zoom:80%;" />
 
 hadoop的web页面：可以看到3个节点
 
-![](pic/hadoop_web.png)
+![](./pic/hadoop_web.png)
 
 ##### 3.spark配置
 
@@ -198,7 +198,7 @@ sbin/stop-slaves.sh
 
 master节点jps后，可以看到出现Master, Worker进程；slavers节点出现Worker进程
 
-<img src="pic/spark_master.png" style="zoom:80%;" />
+<img src="./pic/spark_master.png" style="zoom:80%;" />
 
 ##### start脚本启动所有进程
 
