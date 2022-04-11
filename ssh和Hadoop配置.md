@@ -10,11 +10,22 @@
 
 参考[不同的虚拟机之间怎么保证能互相ping通-百度经验 (baidu.com)](https://jingyan.baidu.com/article/29697b91c04e10ea20de3c9e.html)，将虚拟机设置中网络适配器修改为桥接模式，进入Ubuntu后`ifconfig`可发现IP已经变为主机网段。之后直接`ping ip`即可
 
+
+
 ##### ssh连接
 
 - 首先，两台机器上都要安装openssh-server，`sudo apt-get install openssh-server`
 - 保证双方可以互ping
 - 在主节点上ssh对方`ssh user@hostname`，输入yes，输密码，即可远程控制对方的shell。
+
+```shell
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+```
+
+如果出现上述文字，清空~/.ssh/known_hosts文件，再重新建立ssh连接
+
 
 
 ##### scp：基于ssh传输目录
@@ -23,9 +34,7 @@
 
 例如`scp -r ./hadoop user@hostname:~/Downloads/hadoop`
 
-
-
-`/bin/xysnc`分发脚本：通过同步工具rsync将本机文件同步到其他节点的相同位置`xsync filename`。scp是复制，rsync避免复制相同内容
+另一种传输方法是使用`/bin/xysnc`分发脚本：通过同步工具rsync将本机文件同步到其他节点的相同位置`xsync filename`。scp是复制，rsync避免复制相同内容
 
 
 
@@ -50,9 +59,11 @@ hdfs的系统架构：一个主节点namenode，一个备用节点secondary node
 
 
 
-##### 1.hadoop配置
+##### 1.hadoop集群配置
 
-（1）修改`/home/mika/Documents/hadoop/etc/hadoop/hadoop-env.sh`中的`JAVA_HOME`
+进入`/home/mika/Documents/hadoop/etc/hadoop/`
+
+（1）修改`hadoop-env.sh`中的`JAVA_HOME`
 
 （2）修改`core-site.xml`（设置了文件访问端口9000）
 
@@ -61,13 +72,17 @@ hdfs的系统架构：一个主节点namenode，一个备用节点secondary node
     <!--namenode地址-->
     <property>
         <name>fs.defaultFS</name>
-        <value>hdfs://localhost:9000</value>
+        <value>hdfs://acer:9000</value>
     </property>
-    <!--tmp目录-->
+    <!--数据的存储目录-->
     <property>
         <name>hadoop.tmp.dir</name>
         <value>file:/home/mika/Documents/hadoop/tmp</value>
         <description>Abase for other temporary directories.</description>
+    </property>
+    <property>
+        <name>hadoop.http.staticuser.user</name>
+        <value>acer</value>
     </property>
 </configuration>
 ```
@@ -84,13 +99,13 @@ hdfs的系统架构：一个主节点namenode，一个备用节点secondary node
 <configuration>
     <!--namenode的web端访问地址-->
     <property>
-        <name>dfs.namenode.name.http-address</name>
-        <value>acer:8088</value>
+        <name>dfs.namenode.http-address</name>
+        <value>acer:9870</value>
     </property>
     <!--2nd namenode的web端访问地址-->
     <property>
-        <name>dfs.namenode.secondary.name.http-address</name>
-        <value>lenovo:8088</value>
+        <name>dfs.namenode.secondary.http-address</name>
+        <value>lenovo:9868</value>
     </property>
     
     <property>
@@ -108,16 +123,9 @@ hdfs的系统架构：一个主节点namenode，一个备用节点secondary node
 </configuration>
 ```
 
-注：Hadoop端口信息
 
-[Hadoop 2.x常用端口及查看方法_SunWuKong_Hadoop的博客-CSDN博客_查看hdfs端口](https://blog.csdn.net/SunWuKong_Hadoop/article/details/60877698)
 
-| 端口 | 意义                   |
-| ---- | ---------------------- |
-| 9000 | fs.defaultFS，文件系统 |
-| 8088 | http服务端口           |
-
-（4）修改hadoop/etc/hadoop/workers
+（4）修改`workers`
 
 ```
 acer
@@ -125,31 +133,46 @@ lenovo
 dell
 ```
 
-xsync分发到各节点
+使用xsync，分发到各节点
+
+注：Hadoop端口信息
+
+| 端口 | 意义         |
+| ---- | ------------ |
+| 9000 | hdfs文件系统 |
+| 9870 | Web服务端口  |
 
 
 
 ##### 2.启动hadoop集群
 
 ```shell
-cd /home/mika/Documents/hadoop# 先进入hadoop目录
-rm -rf tmp #清空./tmp目录内容
-hadoop namenode -format # 初始化
-sbin/start-all.sh # 非root模式运行，开启进程
-jps # 看到出现NameNode进程
+cd /home/mika/Documents/hadoop	# 先进入hadoop目录
+rm -rf tmp 	                    # 删除tmp目录
+# hadoop namenode -format       # 第一次时需要初始化
+sbin/start-all.sh               # 非root模式运行，开启进程
+jps                             # 查看当前进程
 
-sbin/stop-all.sh # 关闭所有进程
+sbin/stop-all.sh 				# 关闭所有进程
 ```
 
-打开资源管理器http://localhost:8088/cluster
+- start-dfs（或start-all）后，访问hadoop的web页面http://acer:9870，或者`hdfs dfsadmin -report`查看节点数量是否正确。如果少节点，去该节点的logs目录下看日志，分析错误
+- 要注意的是，主节点的`/etc/hosts`中的**127.0.xx.xx的IP要注释掉**，否则从节点无法访问到主节点的9000端口！
+- 注意第一次启动hadoop时，一定要删除所有节点的tmp和logs目录，再初始化namenode，这样保证每个节点上的集群号ClusterID一致（在`hadoop/tmp/dfs/current/data/VERSION`中查看）。**之后再启动hadoop就不用再初始化了**
 
-可以看到主节点上出现进程：namenode, datanode
+
+
+运行成功后，可以看到主节点上出现进程：namenode, datanode
 
 <img src="pic/namenode.png" style="zoom: 80%;" />
 
 从节点上：datanode
 
 <img src="pic/datanode.png" style="zoom:80%;" />
+
+hadoop的web页面：可以看到3个节点
+
+![](pic/hadoop_web.png)
 
 ##### 3.spark配置
 
@@ -182,10 +205,8 @@ master节点jps后，可以看到出现Master, Worker进程；slavers节点出�
 为了方便，可编写脚本`/home/mika/Documents/start.sh`，通过`./start.sh`运行
 
 ```shell
-#!/bin/shell
+#!/bin/bash
 cd /home/mika/Documents/hadoop
-rm -rf tmp
-hadoop namenode -format
 sbin/start-all.sh
 cd /home/mika/Documents/spark
 sbin/start-master.sh
@@ -200,7 +221,7 @@ jps
 `/home/mika/Documents/stop.sh`停止所有进程，通过`./stop.sh`运行
 
 ```shell
-#!/bin/shell
+#!/bin/bash
 cd /home/mika/Documents/spark
 sbin/stop-master.sh
 sbin/stop-slaves.sh
@@ -209,15 +230,54 @@ sbin/stop-all.sh
 jps
 ```
 
-#### 传文件到hdfs
+
+
+##### 5.传文件到hdfs
 
 ```shell
 hdfs dfs -put  本地文件路径   hdfs上传文件路径
-#例如hdfs dfs -put  本地文件路径 /data
-hdfs dfs -ls / # 显示服务器所有文件
+#例如 hdfs dfs -put ~/Desktop/mika_java/mika-classes/titles.txt /data
+
+hdfs dfs -ls / # 显示hdfs上所有文件
 ```
 
-上传文件后，文件路径为hdfs://localhost:9000/data
+上传文件后，文件路径为hdfs://acer:9000/data
 
-[Spark读取和存储HDFS上的数据 - 云+社区 - 腾讯云 (tencent.com)](https://cloud.tencent.com/developer/article/1546814)
+
+
+#### 运行Spark的Java程序
+
+Java程序中，hdfs上的文件路径格式为`hdfs://acer:9000/data`；
+
+本地的文件路径格式为`file:///home/mika/Desktop/data.txt`
+
+
+
+1.首先要把整个项目打成jar包
+
+- IDEA中File->Project Structure->Project Settings->Artifacts->+->选定要打包的class。这里注意只保留第一项和最后一项。参考[Spark打包WordCount程序的jar包_sa726663676的博客-CSDN博客_wordcount打包](https://blog.csdn.net/sa726663676/article/details/120122230)
+
+- 构建：Build->Build Artifacts->Build
+
+2.启动spark服务
+
+3.在shell中运行（--class后面是要运行的java类，并且该类包含main方法，这里运行`SimilarSelect.java`）
+
+```sh
+# 本地环境
+spark-submit \
+--class SimilarSelect \
+--master local[2] \
+/home/mika/Desktop/mika_java/mika-classes/out/artifacts/mika_classes_jar/mika-classes.jar
+
+# 集群环境
+spark-submit \
+--class SimilarSelect \
+--master spark://acer:7077 \
+/home/mika/Desktop/mika_java/mika-classes/out/artifacts/mika_classes_jar/mika-classes.jar
+```
+
+
+
+
 
