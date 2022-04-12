@@ -1,8 +1,10 @@
 #### 虚拟机间ssh连接
 
-`/etc/hosts`中保存了每个IP和对应的主机名
+`/etc/hosts`中保存了每个IP和对应的主机名，IP可能会经常变，要注意修改hosts！
 
 `/etc/hostname`修改主机名
+
+
 
 ##### 不同主机上两台Ubuntu虚拟机之间如何ping通
 
@@ -57,7 +59,11 @@ hdfs：Hadoop分布式文件系统。
 
 hdfs的系统架构：一个主节点namenode，一个备用节点secondary node，若干从节点datanode
 
+首先进行集群部署规划
 
+| 虚拟机名 | acer（主节点）     | lenovo                      | dell     |
+| -------- | ------------------ | --------------------------- | -------- |
+| HDFS     | NameNode, DataNode | SecondaryNameNode, DataNode | DataNode |
 
 ##### 1.hadoop集群配置
 
@@ -88,12 +94,6 @@ hdfs的系统架构：一个主节点namenode，一个备用节点secondary node
 ```
 
 （3）修改`hdfs-site.xml`
-
-首先进行集群部署规划
-
-| 虚拟机名 | acer               | lenovo                      | dell     |
-| -------- | ------------------ | --------------------------- | -------- |
-| HDFS     | NameNode, DataNode | SecondaryNameNode, DataNode | DataNode |
 
 ```xml
 <configuration>
@@ -134,13 +134,6 @@ dell
 ```
 
 使用xsync，分发到各节点
-
-注：Hadoop端口信息
-
-| 端口 | 意义         |
-| ---- | ------------ |
-| 9000 | hdfs文件系统 |
-| 9870 | Web服务端口  |
 
 
 
@@ -196,9 +189,17 @@ sbin/stop-master.sh
 sbin/stop-slaves.sh
 ```
 
-master节点jps后，可以看到出现Master, Worker进程；slavers节点出现Worker进程
+master节点jps后，可以看到出现Master, Worker进程；
 
 <img src="./pic/spark_master.png" style="zoom:80%;" />
+
+slavers节点出现Worker进程
+
+<img src="pic/worker.png" style="zoom:80%;" />
+
+Spark的web页面：http://acer:8080，可以看到三个节点
+
+![](pic/spark_web.png)
 
 ##### start脚本启动所有进程
 
@@ -230,28 +231,54 @@ sbin/stop-all.sh
 jps
 ```
 
+##### 端口信息
+
+| 端口 | 意义                                  |
+| ---- | ------------------------------------- |
+| 9000 | hdfs文件系统的端口                    |
+| 9870 | Hadoop的Web服务端口                   |
+| 8080 | Spark的Web服务端口                    |
+| 7077 | Spark基于standalone的提交任务的端口号 |
+
 
 
 ##### 5.传文件到hdfs
 
 ```shell
 hdfs dfs -put  本地文件路径   hdfs上传文件路径
-#例如 hdfs dfs -put ~/Desktop/mika_java/mika-classes/titles.txt /data
+# hdfs dfs -put ~/Desktop/mika_java/mika-classes/titles.txt /data
 
-hdfs dfs -ls / # 显示hdfs上所有文件
+hdfs dfs -ls / 		# 显示hdfs上所有文件
+hadoop fs -rm /data	# 删除hdfs上文件
+hadoop fs -rm -r /data	# 删除hdfs上目录
+hadoop fs -get hdfs://acer:9000/data localfile # 复制hdfs文件到本地
 ```
 
 上传文件后，文件路径为hdfs://acer:9000/data
 
+所有上传的文件还可通过http://acer:8080 ->Utilities->Browse the file system查看
 
+![](pic/hdfs.png)
 
-#### 运行Spark的Java程序
+#### Spark上运行Java程序
+
+##### 文件路径
 
 Java程序中，hdfs上的文件路径格式为`hdfs://acer:9000/data`；
 
 本地的文件路径格式为`file:///home/mika/Desktop/data.txt`
 
+##### 注意事项
 
+Java读取较大文件时，需要分区，来保证单个task的大小不太大。比如用textFile读取数据，后面的参数是分区数量
+
+```java
+JavaRDD<String> lines = sc.textFile("hdfs://acer:9000/data",128);
+```
+
+
+
+##### 运行过程
 
 1.首先要把整个项目打成jar包
 
@@ -277,7 +304,23 @@ spark-submit \
 /home/mika/Desktop/mika_java/mika-classes/out/artifacts/mika_classes_jar/mika-classes.jar
 ```
 
+hadoop fs -rm -r /prefix_index
 
+spark-submit \
+--class PrefixFilter \
+--master spark://acer:7077 \
+/home/mika/Desktop/mika_java/mika-classes/out/artifacts/mika_classes_jar/mika-classes.jar \
+0.6 64
 
+hadoop fs -rm -r /segment_index
 
+spark-submit \
+--class SegmentFilter \
+--master spark://acer:7077 \
+/home/mika/Desktop/mika_java/mika-classes/out/artifacts/mika_classes_jar/mika-classes.jar \
+0.6 64
 
+spark-submit \
+--class Main \
+--master spark://acer:7077 \
+/home/mika/Desktop/mika_java/mika-classes/out/artifacts/mika_classes_jar/mika-classes.jar

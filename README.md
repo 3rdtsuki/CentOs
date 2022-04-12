@@ -29,6 +29,8 @@ sudo ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 编辑环境变量`nano /etc/profile`，使生效`source /etc/profile`
 
+查看80端口信息`netstat -ntulp |grep 80`
+
 
 
 #### WSL环境下安装Ubuntu
