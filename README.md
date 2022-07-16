@@ -6,7 +6,7 @@ VMWare12密钥：5A02H-AU243-TZJ49-GTC7K-3C61N
 
 修改时区
 
-```shell
+```sh
 tzselect
 sudo ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 ```
@@ -31,12 +31,7 @@ sudo ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 查看80端口信息`netstat -ntulp |grep 80`
 
-
-
-#### WSL环境下安装Ubuntu
-
-https://www.computerhope.com/issues/ch001879.htm#install
-WSL环境下安装，不用装虚拟机
+换下载源`nano /etc/apt/sources.list`
 
 
 
@@ -50,4 +45,20 @@ sudo service network-manager start
 sudo nano /etc/NetworkManager/NetworkManager.conf
 把false改成true
 ```
+
+#### ifconfig发现没有eth0网卡
+
+```sh
+sudo ifconfig eth0 up
+sudo dhclient eth0
+```
+
+如果没有IP地址，关闭
+
+#### WSL环境下安装Ubuntu
+
+WSL：Windows Subsystem for Linux，不用装VMWare
+
+https://www.computerhope.com/issues/ch001879.htm#install
+
 

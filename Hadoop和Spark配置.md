@@ -252,11 +252,12 @@ hdfs dfs -ls / 		# 显示hdfs上所有文件
 hadoop fs -rm /data	# 删除hdfs上文件
 hadoop fs -rm -r /data	# 删除hdfs上目录
 hadoop fs -get hdfs://acer:9000/data localfile # 复制hdfs文件到本地
+hadoop fs -du -s -h /segment_index # 查看目录大小
 ```
 
 上传文件后，文件路径为hdfs://acer:9000/data
 
-所有上传的文件还可通过http://acer:8080 ->Utilities->Browse the file system查看
+所有上传的文件还可通过http://acer:9870 ->Utilities->Browse the file system查看
 
 ![](pic/hdfs.png)
 
@@ -284,7 +285,7 @@ JavaRDD<String> lines = sc.textFile("hdfs://acer:9000/data",128);
 
 - IDEA中File->Project Structure->Project Settings->Artifacts->+->选定要打包的class。这里注意只保留第一项和最后一项。参考[Spark打包WordCount程序的jar包_sa726663676的博客-CSDN博客_wordcount打包](https://blog.csdn.net/sa726663676/article/details/120122230)
 
-- 构建：Build->Build Artifacts->Build
+- 每次修改代码后，重新构建：Build->Build Artifacts->Build
 
 2.启动spark服务
 
@@ -304,23 +305,3 @@ spark-submit \
 /home/mika/Desktop/mika_java/mika-classes/out/artifacts/mika_classes_jar/mika-classes.jar
 ```
 
-hadoop fs -rm -r /prefix_index
-
-spark-submit \
---class PrefixFilter \
---master spark://acer:7077 \
-/home/mika/Desktop/mika_java/mika-classes/out/artifacts/mika_classes_jar/mika-classes.jar \
-0.6 64
-
-hadoop fs -rm -r /segment_index
-
-spark-submit \
---class SegmentFilter \
---master spark://acer:7077 \
-/home/mika/Desktop/mika_java/mika-classes/out/artifacts/mika_classes_jar/mika-classes.jar \
-0.6 64
-
-spark-submit \
---class Main \
---master spark://acer:7077 \
-/home/mika/Desktop/mika_java/mika-classes/out/artifacts/mika_classes_jar/mika-classes.jar
