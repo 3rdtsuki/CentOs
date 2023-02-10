@@ -16,7 +16,10 @@
 
 ##### ssh连接
 
-- 首先，两台机器上都要安装openssh-server，`sudo apt-get install openssh-server`
+- 首先，两台机器上都要安装openssh-server
+  ```sh
+  sudo apt-get install openssh-server
+  ```
 - 保证双方可以互ping
 - 在主节点上ssh对方`ssh user@hostname`，输入yes，输密码，即可远程控制对方的shell。
 
@@ -26,15 +29,21 @@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ```
 
-如果出现上述文字，清空~/.ssh/known_hosts文件，再重新建立ssh连接
+如果出现上述文字，清空`~/.ssh/known_hosts`文件，再重新建立ssh连接
 
 
 
 ##### scp：基于ssh传输目录
 
-`scp -r 本地path user@hostname:目的path  `
+`scp -r <本地path> user@hostname:<目的path>  `
 
-例如`scp -r ./hadoop user@hostname:~/Downloads/hadoop`
+例如：（注意冒号）
+
+```sh 
+scp -r ./hadoop mika@acer:~/Downloads/hadoop
+```
+
+
 
 另一种传输方法是使用`/bin/xysnc`分发脚本：通过同步工具rsync将本机文件同步到其他节点的相同位置`xsync filename`。scp是复制，rsync避免复制相同内容
 
