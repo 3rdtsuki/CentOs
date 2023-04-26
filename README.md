@@ -28,7 +28,7 @@ timedatectl set-timezone Asia/Shanghai
 
 编辑环境变量`nano /etc/profile`，使生效`source /etc/profile`
 
-
+目录下查找文件`find ./ -name *target*`
 
 #### 文本
 
@@ -144,7 +144,7 @@ sudo rm /var/lib/NetworkManager/NetworkManager.state
 sudo service network-manager start
 ```
 
-##### ifconfig发现没有eth0网卡
+##### Kali ifconfig发现没有eth0网卡
 
 ```sh
 sudo ifconfig eth0 up
@@ -161,15 +161,21 @@ sudo /etc/init.d/networking restart
 
 #### ssh
 
-- 首先，两台机器上都要安装openssh-server
+首先，两台机器上都要安装openssh-server，并保证双方可以互ping
 
-  ```sh
-  sudo apt-get install openssh-server
-  ```
+```sh
+sudo apt-get install openssh-server
+```
 
-- 保证双方可以互ping
+在主节点上ssh对方
 
-- 在主节点上ssh对方`ssh user@hostname`，输入yes，输密码，即可远程控制对方的shell。
+```sh
+ssh mika@192.168.10.129# 不指定端口默认22端口
+ssh -p 22 mika@192.168.10.129
+```
+
+
+输入yes，输密码，即可远程控制对方的shell。
 
 ```shell
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -250,3 +256,39 @@ crtl + shift + T
 WSL：Windows Subsystem for Linux，不用装VMWare
 
 https://www.computerhope.com/issues/ch001879.htm#install
+
+#### mysql安装
+
+```sh
+sudo apt install mysql-server
+
+# root下建立新用户
+sudo mysql -uroot -proot
+create user mika@localhost identified by '1798';
+grant all on *.* to mika@localhost;
+flush privileges;
+
+sudo mysql -u mika -p
+```
+
+#### open: Text file busy
+
+fuser -v filename，然后kill -9 pid
+
+#### ubuntu绑定IP
+
+```sh
+sudo vim /etc/network/interfaces
+```
+
+在下面增加
+
+```
+auto ens33
+iface ens33 inet static
+address 192.168.10.168
+netmask 255.255.255.0
+gateway 192.168.10.2
+```
+
+重启即可
