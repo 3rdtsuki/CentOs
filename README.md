@@ -42,7 +42,11 @@ timedatectl set-timezone Asia/Shanghai
 sed -i 's%str1%str2%g' <file_name>
 ```
 
-
+#### 更新Python版本
+首先下载tar.z包，然后
+./configure
+make
+make install
 
 #### vim
 
